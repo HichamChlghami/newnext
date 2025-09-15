@@ -22,20 +22,14 @@ export async function GET(req) {
   const tokenParam = url.searchParams.get("hub.verify_token");
   const challenge = url.searchParams.get("hub.challenge");
 
-  // Webhook verification (WhatsApp)
-  if (mode === "subscribe" && tokenParam === "123456") {
-    return NextResponse.json(challenge);
+  if (mode === "subscribe" && tokenParam === "token") {
+    // Must return plain text, not JSON
+    return new Response(challenge, { status: 200 });
   }
 
-  // SSE endpoint for real-time updates
-  const stream = new ReadableStream({
-    start(controller) {
-      clients.push(controller);
-      req.signal.addEventListener("abort", () => {
-        clients = clients.filter((c) => c !== controller);
-      });
-    },
-  });
+  return new Response("Invalid token", { status: 403 });
+}
+
 
   return new Response(stream, {
     headers: {
